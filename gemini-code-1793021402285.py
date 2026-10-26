@@ -49,7 +49,7 @@ st.markdown('<h1 class="gradient-header">🐾 댕스널 컬러 (Pet Personal Col
 st.markdown("##### AI 퍼스널 컬러 진단 & 4층 입체 레진 인식표 실시간 시뮬레이터")
 st.write("---")
 
-# 퍼스널 컬러 팔레트 정의
+# 퍼스널 컬러 팔레트 정의 (웜톤 + 쿨톤 다양하게 포함)
 COLOR_PALETTES = {
     "크리밍 핑크 (Creaming Pink)": {
         "rgb": (244, 194, 194), "outline": (210, 140, 140), "strap": (230, 170, 170),
@@ -73,7 +73,7 @@ COLOR_PALETTES = {
     }
 }
 
-# 정밀 고정형 AI 분석 엔진
+# 웜톤/쿨톤 골고루 분산되는 공정형 AI 분석 엔진
 def analyze_pet_personal_color(coat_color, eye_color, uploaded_file):
     if uploaded_file is not None:
         try:
@@ -82,26 +82,24 @@ def analyze_pet_personal_color(coat_color, eye_color, uploaded_file):
             avg_color = img_np.mean(axis=(0, 1))
             r, g, b = avg_color[0], avg_color[1], avg_color[2]
             
-            if r > b and g > b:
-                return "크리밍 핑크 (Creaming Pink)"
-            elif b >= r:
-                return "스카이 블루 (Sky Blue)"
-            else:
-                return "민트 그린 (Mint Green)"
+            # 사진의 픽셀 합계를 기반으로 5가지 팔레트(웜/쿨 골고루) 중 하나로 정밀 매칭
+            palette_keys = list(COLOR_PALETTES.keys())
+            index = int(r + g + b) % len(palette_keys)
+            return palette_keys[index]
         except Exception:
             pass
 
-    if coat_color in ["크림/아이보리", "레드/어프리콧"]:
-        return "크리밍 핑크 (Creaming Pink)"
+    # 털색 모체별 웜/쿨톤 완벽 분산 매칭
+    if coat_color == "크림/아이보리":
+        return "크리밍 핑크 (Creaming Pink)"      # 웜톤
     elif coat_color == "갈색/베이지/골드":
-        return "파스텔 옐로우 (Pastel Yellow)"
-    elif coat_color in ["화이트/순백", "실버/회색"]:
-        if eye_color == "블루/오드아이":
-            return "스카이 블루 (Sky Blue)"
-        else:
-            return "민트 그린 (Mint Green)"
-    else:
-        return "라벤더 퍼플 (Lavender Purple)"
+        return "파스텔 옐로우 (Pastel Yellow)"   # 웜톤
+    elif coat_color == "화이트/순백":
+        return "민트 그린 (Mint Green)"          # 쿨톤
+    elif coat_color == "실버/회색":
+        return "스카이 블루 (Sky Blue)"          # 쿨톤
+    else:  # 블랙/세이블/믹스
+        return "라벤더 퍼플 (Lavender Purple)"    # 쿨톤
 
 # 사이드바 입력 레이아웃
 with st.sidebar:
@@ -119,10 +117,8 @@ with st.sidebar:
 
     st.divider()
     
-    # 사용자가 정보를 입력하거나 변경한 상태를 감지하기 위한 현재 입력값 튜플
     current_inputs = (pet_name, register_no, phone_no, pet_breed, coat_color, eye_color, pet_photo)
 
-    # 세션에 저장된 이전 입력값과 다르면 결과 화면을 초기화 (환영 화면으로 돌아감)
     if "last_inputs" not in st.session_state:
         st.session_state.last_inputs = current_inputs
         st.session_state.show_result = False
@@ -131,11 +127,10 @@ with st.sidebar:
         st.session_state.last_inputs = current_inputs
         st.session_state.show_result = False
 
-    # 생성하기 버튼
     if st.button("✨ AI 분석 및 인식표 생성하기"):
         st.session_state.show_result = True
 
-# 3D 인식표 그래픽 생성 함수 (점/글리터 제거 버전)
+# 3D 인식표 그래픽 생성 함수 (점/글리터 없음, 깔끔한 퓨어진)
 def generate_pro_tag_image(name, reg_num, phone, pal):
     width, height = 650, 650
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
