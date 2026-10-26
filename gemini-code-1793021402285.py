@@ -49,10 +49,6 @@ st.markdown('<h1 class="gradient-header">🐾 댕스널 컬러 (Pet Personal Col
 st.markdown("##### AI 퍼스널 컬러 진단 & 4층 입체 레진 인식표 실시간 시뮬레이터")
 st.write("---")
 
-# 세션 스테이트 초기화
-if "show_result" not in st.session_state:
-    st.session_state.show_result = False
-
 # 퍼스널 컬러 팔레트 정의
 COLOR_PALETTES = {
     "크리밍 핑크 (Creaming Pink)": {
@@ -104,7 +100,7 @@ def analyze_pet_personal_color(coat_color, eye_color, uploaded_file):
             return "스카이 블루 (Sky Blue)"
         else:
             return "민트 그린 (Mint Green)"
-    else:  # 블랙/세이블/믹스
+    else:
         return "라벤더 퍼플 (Lavender Purple)"
 
 # 사이드바 입력 레이아웃
@@ -123,35 +119,43 @@ with st.sidebar:
 
     st.divider()
     
+    # 사용자가 정보를 입력하거나 변경한 상태를 감지하기 위한 현재 입력값 튜플
+    current_inputs = (pet_name, register_no, phone_no, pet_breed, coat_color, eye_color, pet_photo)
+
+    # 세션에 저장된 이전 입력값과 다르면 결과 화면을 초기화 (환영 화면으로 돌아감)
+    if "last_inputs" not in st.session_state:
+        st.session_state.last_inputs = current_inputs
+        st.session_state.show_result = False
+
+    if st.session_state.last_inputs != current_inputs:
+        st.session_state.last_inputs = current_inputs
+        st.session_state.show_result = False
+
+    # 생성하기 버튼
     if st.button("✨ AI 분석 및 인식표 생성하기"):
         st.session_state.show_result = True
 
-# 3D 인식표 그래픽 생성 함수 (점/글리터 제거됨)
+# 3D 인식표 그래픽 생성 함수 (점/글리터 제거 버전)
 def generate_pro_tag_image(name, reg_num, phone, pal):
     width, height = 650, 650
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # 1. 목줄 가죽 스트랩
     collar_y = 60
     strap_h = 50
     draw.rounded_rectangle([100, collar_y, width - 100, collar_y + strap_h], radius=15, fill=pal["strap"]+(255,), outline=pal["outline"]+(255,), width=3)
     draw.ellipse([width//2 - 20, collar_y + 12, width//2 + 20, collar_y + strap_h - 12], outline=(180, 185, 190, 255), width=6)
 
-    # 2. 연결 금속 링
     ring_cx, ring_cy = width // 2, collar_y + strap_h + 20
     draw.ellipse([ring_cx - 22, ring_cy - 22, ring_cx + 22, ring_cy + 22], outline=(160, 165, 170, 255), width=6)
 
-    # 3. 인식표 베이스 (입체 그림자 & 테두리)
     margin = 80
-    draw.ellipse([margin+5, margin+20+ring_cy, width - margin+5, height - margin+20+ring_cy], fill=(200, 200, 200, 80)) # 입체 그림자
+    draw.ellipse([margin+5, margin+20+ring_cy, width - margin+5, height - margin+20+ring_cy], fill=(200, 200, 200, 100))
     draw.ellipse([margin, margin+ring_cy, width - margin, height - margin+ring_cy], fill=pal["rgb"]+(255,), outline=pal["outline"]+(255,), width=8)
 
-    # 4. 깨끗하고 투명한 레진 레이어 (점/글리터 제거)
     inner_m = 115
-    draw.ellipse([inner_m, inner_m+ring_cy, width - inner_m, height - inner_m+ring_cy], fill=(255, 255, 255, 225), outline=(255, 255, 255, 255), width=4)
+    draw.ellipse([inner_m, inner_m+ring_cy, width - inner_m, height - inner_m+ring_cy], fill=(255, 255, 255, 210), outline=(255, 255, 255, 240), width=4)
 
-    # 5. 각인 텍스트
     try:
         font_name = ImageFont.truetype("arial.ttf", 46)
         font_sub = ImageFont.truetype("arial.ttf", 22)
@@ -163,7 +167,7 @@ def generate_pro_tag_image(name, reg_num, phone, pal):
     draw.text((width / 2, cy_center - 45), name, fill=(50, 50, 50, 255), font=font_name, anchor="mm")
     draw.text((width / 2, cy_center + 20), f"NO: {reg_num}", fill=(70, 70, 70, 255), font=font_sub, anchor="mm")
     draw.text((width / 2, cy_center + 60), f"TEL: {phone}", fill=(70, 70, 70, 255), font=font_sub, anchor="mm")
-    draw.text((width / 2, cy_center + 105), "[ 100% Food-Grade Purezin ]", fill=(110, 110, 110, 255), font=font_sub, anchor="mm")
+    draw.text((width / 2, cy_center + 105), "[ 100% Food-Grade Resin ]", fill=(110, 110, 110, 255), font=font_sub, anchor="mm")
 
     return img
 
@@ -212,11 +216,11 @@ else:
         * **AI 매칭된 팔레트**: **{diagnosed_color_name}**
         * **적용 레이어 구조**:
           * Layer 1: 고경도 UV 스크래치 방지 코팅
-          * Layer 2: 퓨어진 + 커스텀 정밀 각인 레이어
+          * Layer 2: 식품등급 퓨어진 (순수 클리어 레진)
           * Layer 3: **AI 맞춤형 퍼스널 컬러 베이스 & 테두리**
           * Layer 4: 스테인리스 링 & 컬러 매칭 목줄
         """)
-        st.success("🎯 선택하신 정보와 모색에 맞춰 가장 이상적인 톤온톤 매칭이 적용되었습니다!")
+        st.success("🎯 깔끔하고 투명한 고광택 퓨어진 스타일로 완성되었습니다!")
         st.markdown('</div>', unsafe_allow_html=True)
 
     # 크라우드펀딩 모의 투자 섹션
