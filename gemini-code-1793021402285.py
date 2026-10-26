@@ -53,7 +53,7 @@ st.write("---")
 if "show_result" not in st.session_state:
     st.session_state.show_result = False
 
-# 퍼스널 컬러 팔레트 정의 (AI 자동 매칭용)
+# 퍼스널 컬러 팔레트 정의
 COLOR_PALETTES = {
     "크리밍 핑크 (Creaming Pink)": {
         "rgb": (244, 194, 194), "outline": (210, 140, 140), "strap": (230, 170, 170),
@@ -77,7 +77,7 @@ COLOR_PALETTES = {
     }
 }
 
-# AI 자동 분석 엔진
+# 정밀 고정형 AI 분석 엔진
 def analyze_pet_personal_color(coat_color, eye_color, uploaded_file):
     if uploaded_file is not None:
         try:
@@ -95,20 +95,19 @@ def analyze_pet_personal_color(coat_color, eye_color, uploaded_file):
         except Exception:
             pass
 
-    if coat_color in ["크림/아이보리", "갈색/베이지/골드", "레드/어프리콧"]:
-        if eye_color in ["밝은 호박색/브라운", "다크 브라운"]:
-            return "크리밍 핑크 (Creaming Pink)"
-        else:
-            return "파스텔 옐로우 (Pastel Yellow)"
+    if coat_color in ["크림/아이보리", "레드/어프리콧"]:
+        return "크리밍 핑크 (Creaming Pink)"
+    elif coat_color == "갈색/베이지/골드":
+        return "파스텔 옐로우 (Pastel Yellow)"
     elif coat_color in ["화이트/순백", "실버/회색"]:
-        if eye_color in ["블루/오드아이", "다크 브라운"]:
-            return "민트 그린 (Mint Green)"
+        if eye_color == "블루/오드아이":
+            return "스카이 블루 (Sky Blue)"
         else:
-            return "라벤더 퍼플 (Lavender Purple)"
-    else:
-        return "스카이 블루 (Sky Blue)"
+            return "민트 그린 (Mint Green)"
+    else:  # 블랙/세이블/믹스
+        return "라벤더 퍼플 (Lavender Purple)"
 
-# 사이드바 입력 레이아웃 (수동 팔레트 선택 코드 완전 삭제됨)
+# 사이드바 입력 레이아웃
 with st.sidebar:
     st.header("⚙️ 댕스널 컬러 프로필 입력")
     
@@ -127,33 +126,32 @@ with st.sidebar:
     if st.button("✨ AI 분석 및 인식표 생성하기"):
         st.session_state.show_result = True
 
-# 3D 인식표 그래픽 생성 함수
+# 3D 인식표 그래픽 생성 함수 (점/글리터 제거됨)
 def generate_pro_tag_image(name, reg_num, phone, pal):
     width, height = 650, 650
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
+    # 1. 목줄 가죽 스트랩
     collar_y = 60
     strap_h = 50
     draw.rounded_rectangle([100, collar_y, width - 100, collar_y + strap_h], radius=15, fill=pal["strap"]+(255,), outline=pal["outline"]+(255,), width=3)
     draw.ellipse([width//2 - 20, collar_y + 12, width//2 + 20, collar_y + strap_h - 12], outline=(180, 185, 190, 255), width=6)
 
+    # 2. 연결 금속 링
     ring_cx, ring_cy = width // 2, collar_y + strap_h + 20
     draw.ellipse([ring_cx - 22, ring_cy - 22, ring_cx + 22, ring_cy + 22], outline=(160, 165, 170, 255), width=6)
 
+    # 3. 인식표 베이스 (입체 그림자 & 테두리)
     margin = 80
-    draw.ellipse([margin+5, margin+20+ring_cy, width - margin+5, height - margin+20+ring_cy], fill=(200, 200, 200, 100))
+    draw.ellipse([margin+5, margin+20+ring_cy, width - margin+5, height - margin+20+ring_cy], fill=(200, 200, 200, 80)) # 입체 그림자
     draw.ellipse([margin, margin+ring_cy, width - margin, height - margin+ring_cy], fill=pal["rgb"]+(255,), outline=pal["outline"]+(255,), width=8)
 
+    # 4. 깨끗하고 투명한 레진 레이어 (점/글리터 제거)
     inner_m = 115
-    draw.ellipse([inner_m, inner_m+ring_cy, width - inner_m, height - inner_m+ring_cy], fill=(255, 255, 255, 210), outline=(255, 255, 255, 240), width=4)
+    draw.ellipse([inner_m, inner_m+ring_cy, width - inner_m, height - inner_m+ring_cy], fill=(255, 255, 255, 225), outline=(255, 255, 255, 255), width=4)
 
-    np.random.seed(42)
-    for _ in range(40):
-        gx = np.random.randint(inner_m + 25, width - inner_m - 25)
-        gy = np.random.randint(inner_m + 25 + ring_cy, height - inner_m - 25 + ring_cy)
-        draw.ellipse([gx, gy, gx + 4, gy + 4], fill=(218, 165, 32, 220))
-
+    # 5. 각인 텍스트
     try:
         font_name = ImageFont.truetype("arial.ttf", 46)
         font_sub = ImageFont.truetype("arial.ttf", 22)
@@ -165,7 +163,7 @@ def generate_pro_tag_image(name, reg_num, phone, pal):
     draw.text((width / 2, cy_center - 45), name, fill=(50, 50, 50, 255), font=font_name, anchor="mm")
     draw.text((width / 2, cy_center + 20), f"NO: {reg_num}", fill=(70, 70, 70, 255), font=font_sub, anchor="mm")
     draw.text((width / 2, cy_center + 60), f"TEL: {phone}", fill=(70, 70, 70, 255), font=font_sub, anchor="mm")
-    draw.text((width / 2, cy_center + 105), "[ 100% Food-Grade Resin ]", fill=(110, 110, 110, 255), font=font_sub, anchor="mm")
+    draw.text((width / 2, cy_center + 105), "[ 100% Food-Grade Purezin ]", fill=(110, 110, 110, 255), font=font_sub, anchor="mm")
 
     return img
 
@@ -181,7 +179,7 @@ else:
     diagnosed_color_name = analyze_pet_personal_color(coat_color, eye_color, pet_photo)
     palette = COLOR_PALETTES[diagnosed_color_name]
     
-    with st.spinner(f"🤖 AI가 {pet_name}의 사진과 모색을 스캔하여 최적의 퍼스널 컬러를 도출 중입니다..."):
+    with st.spinner(f"🤖 AI가 {pet_name}의 모색과 프로필을 정밀 분석하여 퍼스널 컬러를 도출 중입니다..."):
         time.sleep(1.2)
     
     col1, col2 = st.columns([1.1, 0.9])
@@ -205,20 +203,20 @@ else:
             f'<span class="tone-badge" style="background-color: {badge_hex};">AI 진단 톤: {palette["tone"]}</span>',
             unsafe_allow_html=True
         )
-        st.info(f"💡 AI 분석 결과, **{pet_name}**에게 가장 완벽하게 어울리는 컬러는 **[{diagnosed_color_name}]** 입니다!\n\n{palette['desc']}")
+        st.info(f"💡 AI 분석 결과, **{pet_name}**에게 가장 완벽하게 어울리는 고유 컬러는 **[{diagnosed_color_name}]** 입니다!\n\n{palette['desc']}")
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="app-card">', unsafe_allow_html=True)
         st.subheader("🎨 맞춤형 컬러 매칭 & 레이어 구조")
         st.markdown(f"""
-        * **자동 매칭된 팔레트**: **{diagnosed_color_name}**
+        * **AI 매칭된 팔레트**: **{diagnosed_color_name}**
         * **적용 레이어 구조**:
           * Layer 1: 고경도 UV 스크래치 방지 코팅
-          * Layer 2: 퓨어진 + 24K 금박 글리터 각인
+          * Layer 2: 퓨어진 + 커스텀 정밀 각인 레이어
           * Layer 3: **AI 맞춤형 퍼스널 컬러 베이스 & 테두리**
           * Layer 4: 스테인리스 링 & 컬러 매칭 목줄
         """)
-        st.success("🎯 아이의 털 색상과 완벽하게 조화되는 톤온톤 매칭이 적용되었습니다!")
+        st.success("🎯 선택하신 정보와 모색에 맞춰 가장 이상적인 톤온톤 매칭이 적용되었습니다!")
         st.markdown('</div>', unsafe_allow_html=True)
 
     # 크라우드펀딩 모의 투자 섹션
