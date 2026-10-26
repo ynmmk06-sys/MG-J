@@ -5,7 +5,7 @@ import time
 
 # Streamlit 페이지 기본 설정
 st.set_page_config(
-    page_title="댕스널 컬러 & 레진 인식표 시뮬레이터", 
+    page_title="댕스널 컬러 & 포 태그(PAW TAG)", 
     page_icon="🐾", 
     layout="wide"
 )
@@ -46,7 +46,7 @@ st.markdown("""
 
 # 헤더 영역
 st.markdown('<h1 class="gradient-header">🐾 댕스널 컬러 (Pet Personal Color)</h1>', unsafe_allow_html=True)
-st.markdown("##### AI 퍼스널 컬러 진단 & 4층 입체 레진 인식표 실시간 시뮬레이터")
+st.markdown("##### AI 퍼스널 컬러 진단 & 포 태크(PAW TAG)")
 st.write("---")
 
 # 퍼스널 컬러 팔레트 정의 (웜톤 + 쿨톤 다양하게 포함)
